@@ -130,6 +130,7 @@ else
 
     //load weights
     BLOB* w = load_weights(in, p);
+
 info("CONVOLUTION\n");
 info("output_depth: %d\n", out->d);
 info("output_height: %d\n", out->h);
@@ -139,16 +140,30 @@ info("input_depth: %d\n", in->d);
 info("Ky : %d\n", Ky);
 info("Kx: %d\n", Kx);
     //perform convolution
-    for(int g=0;g<p->group;g++)
-        for(int o=g*(out->d/p->group);o<(g+1)*(out->d/p->group);o++)
-            for(int i=g*(in->d/p->group);i<(g+1)*(in->d/p->group);i++)
+//    for(int g=0;g<p->group;g++)
+if(out->w==1){
+
+        for(int o=0;o<out->d;o++)
+	    for(int i=0;i<in->d;i++)
+                for(int k=0;k<Ky;k++)
+                    for(int l=0;l<Kx;l++)
+                                //note: absolute starting i is subtracted for the weights, see load_weights function for more info
+                                blob_data(out,o,0,0)+=  + blob_data(in, i, k, l) * blob_data(w, o, i, k*Kx + l);
+
+
+
+}
+else{
+        for(int o=0;o<out->d;o++)
+            for(int i=0;i<in->d;i++)
                 for(int m=0;m<out->h;m++)
                     for(int n=0;n<out->w;n++)
                         for(int k=0;k<Ky;k++)
                             for(int l=0;l<Kx;l++)
                                 //note: absolute starting i is subtracted for the weights, see load_weights function for more info
-                                blob_data(out,o,m,n)+=blob_data(in, i, m*p->Sy+k, n*p->Sx+l) * blob_data(w, o, i-(g*(in->d/p->group)), k*Kx + l);
+                                blob_data(out,o,m,n)+=blob_data(in, i, m*p->Sy+k, n*p->Sx+l) * blob_data(w, o, i, k*Kx + l);
 
+}
 
     //free weights
     blob_free(w);
@@ -164,6 +179,7 @@ info("Kx: %d\n", Kx);
         //load batchnorm mean and variance
         float* mean = load_1d(p->bn_mean, out->d);
         float* var  = load_1d(p->bn_var, out->d);
+
 
         //batchnorm
         for(int o=0;o<out->d;o++)

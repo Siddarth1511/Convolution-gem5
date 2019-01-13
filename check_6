@@ -1,0 +1,76 @@
+Loading image mnist/6.png
+Performing inference
+Performing convolution operation of layer conv1
+BIAS VALUES_OUT
+output_depth: 20
+output_height: 24
+output_width: 24
+3D allocation
+group: 1
+input_depth: 1
+num_out: 20
+CONVOLUTION
+output_depth: 20
+output_height: 24
+output_width: 24
+group: 1
+input_depth: 1
+Ky : 5
+Kx: 5
+Performing pooling operation of layer pool1
+o_d: 20
+Performing convolution operation of layer conv1
+BIAS VALUES_OUT
+output_depth: 50
+output_height: 8
+output_width: 8
+3D allocation
+group: 1
+input_depth: 20
+num_out: 50
+CONVOLUTION
+output_depth: 50
+output_height: 8
+output_width: 8
+group: 1
+input_depth: 20
+Ky : 5
+Kx: 5
+Performing pooling operation of layer pool2
+o_d: 50
+Performing convolution operation of layer ip1
+BIAS VALUES_OUT
+output_depth: 500
+output_height: 1
+output_width: 1
+3D allocation
+group: 1
+input_depth: 50
+num_out: 500
+CONVOLUTION
+output_depth: 500
+output_height: 1
+output_width: 1
+group: 1
+input_depth: 50
+Ky : 4
+Kx: 4
+Performing convolution operation of layer ip2
+BIAS VALUES_OUT
+output_depth: 10
+output_height: 1
+output_width: 1
+3D allocation
+group: 1
+input_depth: 500
+num_out: 10
+CONVOLUTION
+output_depth: 10
+output_height: 1
+output_width: 1
+group: 1
+input_depth: 500
+Ky : 1
+Kx: 1
+Detected class: 1
+[1;37mIz not kitteh. Itz a "1"[0m
