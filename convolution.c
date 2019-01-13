@@ -9,7 +9,10 @@ BLOB* pad(BLOB* in, int pad){
 
     //create output blob
     BLOB* out = blob_calloc(in->d, in->h+2*pad, in->w+pad*2);
-
+info("PADDING\n");
+info("input_depth: %d\n", in->d); 
+info("input_height: %d\n", in->h);
+info("input_width: %d\n", in->w);
     //copy non-padded input into output blob
     for(int z=0;z<in->d;z++)
        for(int y=0;y<in->h;y++)
@@ -34,7 +37,10 @@ BLOB* load_weights(BLOB* b, conv_param_t* p){
 
     //allocate 3D blob, and emulate 4D in KxKy later
     BLOB* w=blob_alloc(p->num_out, b->d/p->group, Ky*Kx);
-
+info("3D allocation\n");
+info("group: %d\n", p->group);
+info("input_depth: %d\n", b->d);
+info("num_out: %d\n", p->num_out);
     //fill 4D weight structure
     for(int g=0;g<p->group;g++)
         for(int o=g*(p->num_out/p->group);o<(g+1)*(p->num_out/p->group);o++)
@@ -42,7 +48,14 @@ BLOB* load_weights(BLOB* b, conv_param_t* p){
                 //note: each output map has only  b->d/p->group input maps. Hence the absolute index of i is subtracted when storing in w!
                 if((int)fread( &(blob_data(w,o,i-g*(b->d/p->group),0)),sizeof(float),Ky*Kx, fp)!=Ky*Kx)
                     error("loading weights from file %s\n", p->weights);
-
+  
+  //for(int g=0;g<p->group;g++)
+/*        for(int o=0;o<p->num_out;o++)
+            for(int i=0;i<b->d;i++)
+                //note: each output map has only  b->d/p->group input maps. Hence the absolute index of i is subtracted when storing in w!
+                if((int)fread( &(blob_data(w,o,i,0)),sizeof(float),Ky*Kx, fp)!=Ky*Kx)
+                    error("loading weights from file %s\n", p->weights);
+*/
     //close file
     fclose(fp);
 
@@ -97,12 +110,26 @@ BLOB* convolution(BLOB* input, conv_param_t* p){
 
         //load bias values from file
         float* bias =load_1d(p->bias, p->num_out);
-
+	float bi=0.0;
+info("BIAS VALUES_OUT\n");
+info("output_depth: %d\n", out->d);
+info("output_height: %d\n", out->h);
+info("output_width: %d\n", out->w);
         //set bias or init with zeroes
+if (out->w == 1 && out->h == 1){
         for(int o=0;o<out->d;o++)
+                    blob_data(out,o,0,0)=bias[o];
+}
+else
+{
+        for(int o=0;o<out->d;o++){
+		bi=bias[o];
             for(int m=0;m<out->h;m++)
                 for(int n=0;n<out->w;n++)
-                    blob_data(out,o,m,n)=bias[o];
+                    blob_data(out,o,m,n)=bi;
+
+}
+}
 
         //cleanup bias
         free(bias);
@@ -110,7 +137,14 @@ BLOB* convolution(BLOB* input, conv_param_t* p){
 
     //load weights
     BLOB* w = load_weights(in, p);
-
+info("CONVOLUTION\n");
+info("output_depth: %d\n", out->d);
+info("output_height: %d\n", out->h);
+info("output_width: %d\n", out->w);
+info("group: %d\n", p->group);
+info("input_depth: %d\n", in->d);
+info("Ky : %d\n", Ky);
+info("Kx: %d\n", Kx);
     //perform convolution
     for(int g=0;g<p->group;g++)
         for(int o=g*(out->d/p->group);o<(g+1)*(out->d/p->group);o++)
@@ -121,6 +155,7 @@ BLOB* convolution(BLOB* input, conv_param_t* p){
                             for(int l=0;l<Kx;l++)
                                 //note: absolute starting i is subtracted for the weights, see load_weights function for more info
                                 blob_data(out,o,m,n)+=blob_data(in, i, m*p->Sy+k, n*p->Sx+l) * blob_data(w, o, i-(g*(in->d/p->group)), k*Kx + l);
+
 
     //free weights
     blob_free(w);
